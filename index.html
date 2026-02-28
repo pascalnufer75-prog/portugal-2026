@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<!-- saved from url=(0062)file:///Users/pascalnufer/Downloads/portugal_reisekarte_4.html -->
+<html lang="de"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portugal Reise 2026</title>
+    <link rel="stylesheet" href="./Portugal Reise 2026_files/leaflet.css">
+    <link rel="stylesheet" href="./Portugal Reise 2026_files/leaflet-routing-machine.css">
+    <script src="./Portugal Reise 2026_files/leaflet.js"></script>
+    <script src="./Portugal Reise 2026_files/leaflet-routing-machine.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+        .header{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:.6rem 1.2rem;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.15);z-index:1000;flex-shrink:0}
+        .header-left h1{font-size:1.3rem;margin:0;font-weight:700}
+        .header-left p{font-size:.78rem;opacity:.9;margin:0}
+        .control-buttons{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center}
+        .control-buttons button{padding:.4rem .8rem;border:none;border-radius:6px;font-size:.8rem;cursor:pointer;transition:all .2s;font-weight:600;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+        .control-buttons button:hover{transform:translateY(-1px);box-shadow:0 2px 6px rgba(0,0,0,.3)}
+        .btn-plan{background:white;color:#667eea}.btn-route{background:#10b981;color:white}
+        .btn-charging{background:#f59e0b;color:white}.btn-sights{background:#8b5cf6;color:white}
+        .btn-beaches{background:#06b6d4;color:white}.btn-daytrips{background:#ec4899;color:white}
+        .btn-reset{background:rgba(255,255,255,.25);color:white;border:1px solid rgba(255,255,255,.4)!important}
+        .btn-active{box-shadow:0 0 0 2px white,0 0 0 4px rgba(255,255,255,.5)!important;transform:translateY(-1px)}
+        .main{display:flex;flex:1;overflow:hidden}
+        /* PLAN PANEL */
+        .plan-panel{width:360px;background:white;overflow-y:auto;border-right:1px solid #e5e7eb;flex-shrink:0;display:none;flex-direction:column}
+        .plan-panel.open{display:flex}
+        .plan-header{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:1rem 1.2rem;flex-shrink:0}
+        .plan-header h2{font-size:1rem;font-weight:700;margin-bottom:.2rem}
+        .plan-header p{font-size:.75rem;opacity:.85}
+        .plan-costs{background:rgba(255,255,255,.15);border-radius:6px;padding:.5rem .8rem;margin-top:.6rem;font-size:.75rem;display:flex;gap:1rem;flex-wrap:wrap}
+        .plan-costs span{display:flex;flex-direction:column}
+        .plan-costs .cost-label{opacity:.8;font-size:.68rem}
+        .plan-costs .cost-val{font-weight:700;font-size:.85rem}
+        .plan-body{padding:.8rem;flex:1}
+        .day-group{margin-bottom:.5rem;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden}
+        .day-header{padding:.6rem .9rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;transition:background .15s}
+        .day-header:hover{filter:brightness(.97)}
+        .day-header.type-fly{background:#eef2ff;border-left:4px solid #6366f1}
+        .day-header.type-hotel{background:#eff6ff;border-left:4px solid #3b82f6}
+        .day-header.type-drive{background:#f0fdf4;border-left:4px solid #10b981}
+        .day-header.type-stay{background:#fff7ed;border-left:4px solid #f59e0b}
+        .day-header.type-return{background:#fef2f2;border-left:4px solid #ef4444}
+        .day-header.type-misc{background:#f9fafb;border-left:4px solid #6b7280}
+        .day-title{font-weight:700;font-size:.85rem;color:#111827}
+        .day-subtitle{font-size:.72rem;color:#6b7280;margin-top:.1rem}
+        .day-chevron{font-size:.7rem;color:#9ca3af;transition:transform .2s}
+        .day-chevron.open{transform:rotate(180deg)}
+        .day-body{display:none;padding:.7rem .9rem;border-top:1px solid #f3f4f6;background:white}
+        .day-body.open{display:block}
+        .timeline{position:relative;padding-left:1.5rem}
+        .timeline::before{content:'';position:absolute;left:.35rem;top:0;bottom:0;width:2px;background:#e5e7eb}
+        .tl-item{position:relative;margin-bottom:.8rem}
+        .tl-item:last-child{margin-bottom:0}
+        .tl-dot{position:absolute;left:-1.15rem;top:.15rem;width:10px;height:10px;border-radius:50%;border:2px solid white;box-shadow:0 0 0 1px #d1d5db;background:#667eea}
+        .tl-dot.green{background:#10b981}.tl-dot.blue{background:#3b82f6}
+        .tl-dot.orange{background:#f59e0b}.tl-dot.red{background:#ef4444}.tl-dot.purple{background:#8b5cf6}
+        .tl-time{font-size:.7rem;font-weight:700;color:#6b7280;margin-bottom:.1rem}
+        .tl-title{font-size:.82rem;font-weight:600;color:#111827}
+        .tl-desc{font-size:.75rem;color:#6b7280;margin-top:.15rem;line-height:1.5}
+        .route-box{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.6rem .8rem;margin:.5rem 0}
+        .route-box.red{background:#fef2f2;border-color:#fecaca}
+        .route-title{font-size:.75rem;font-weight:700;color:#065f46}
+        .route-box.red .route-title{color:#991b1b}
+        .route-stats{display:flex;gap:1rem;margin-top:.3rem;flex-wrap:wrap}
+        .route-stat{font-size:.72rem;color:#374151}
+        .route-stat strong{font-weight:700}
+        .warn-box{background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:.5rem .7rem;margin-top:.5rem;font-size:.75rem;color:#9a3412;font-weight:600}
+        .info-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:.5rem .7rem;margin-top:.5rem;font-size:.75rem;color:#1e40af}
+        .badge{display:inline-block;padding:.1rem .4rem;border-radius:999px;font-size:.68rem;font-weight:600;margin:.1rem .1rem 0 0}
+        .badge-g{background:#d1fae5;color:#065f46}.badge-r{background:#fee2e2;color:#991b1b}.badge-b{background:#dbeafe;color:#1e40af}
+        #map{flex:1}
+        /* POPUP PHOTO */
+        .leaflet-popup-content{font-family:inherit;min-width:260px;max-width:300px}
+        .popup-photo-wrap{width:100%;height:160px;border-radius:8px;overflow:hidden;margin-bottom:.6rem;background:#f3f4f6;display:flex;align-items:center;justify-content:center;position:relative}
+        .popup-photo-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+        .popup-photo-loading{font-size:2rem;position:absolute}
+        .popup-photo-none{font-size:2.5rem}
+        .popup-title{font-weight:bold;font-size:1.05rem;color:#667eea;margin-bottom:.4rem}
+        .popup-details{font-size:.85rem;line-height:1.65}
+        .popup-section{margin-top:.4rem;padding-top:.4rem;border-top:1px solid #e5e7eb}
+        .popup-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:#9ca3af;font-weight:600}
+        .popup-value{color:#111827}
+        .popup-badge{display:inline-block;padding:.12rem .45rem;border-radius:999px;font-size:.7rem;font-weight:600;margin:.15rem .15rem 0 0}
+        .pbadge-g{background:#d1fae5;color:#065f46}.pbadge-r{background:#fee2e2;color:#991b1b}
+        .pbadge-b{background:#dbeafe;color:#1e40af}.pbadge-o{background:#ffedd5;color:#9a3412}.pbadge-y{background:#fef9c3;color:#854d0e}
+        .leaflet-routing-container{display:none}
+        @media(max-width:900px){.plan-panel{width:300px}}
+        @media(max-width:640px){.header{flex-direction:column;padding:.5rem;gap:.4rem}.control-buttons{width:100%;justify-content:center}.plan-panel{width:100%;position:absolute;top:0;left:0;height:100%;z-index:500}}
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="header-left">
+        <h1>🇵🇹 Portugal Reise 2026</h1>
+        <p>Pascal, Theres &amp; Enno · 19.–30. April · CHF 3'607.02</p>
+    </div>
+    <div class="control-buttons">
+        <button class="btn-plan" onclick="togglePlan(this)">📋 Reiseplan</button>
+        <button class="btn-route" onclick="toggleRouting(this)">🚗 Route</button>
+        <button class="btn-charging" onclick="toggleLayer(this,&#39;charging&#39;)">⚡ Laden</button>
+        <button class="btn-sights" onclick="toggleLayer(this,&#39;sights&#39;)">🏛️ Sights</button>
+        <button class="btn-beaches" onclick="toggleLayer(this,&#39;beaches&#39;)">🏖️ Strände</button>
+        <button class="btn-daytrips" onclick="toggleLayer(this,&#39;daytrips&#39;)">🎯 Ausflüge</button>
+        <button class="btn-reset" onclick="resetView()">🔄</button>
+    </div>
+</div>
+<div class="main">
+    <div class="plan-panel" id="planPanel">
+        <div class="plan-header">
+            <h2>📋 Reiseplan · 19.–30. April 2026</h2>
+            <p>Pascal, Theres &amp; Enno Nufer</p>
+            <div class="plan-costs">
+                <span><span class="cost-label">Gesamt</span><span class="cost-val">CHF 3'607.02</span></span>
+                <span><span class="cost-label">Bezahlt</span><span class="cost-val">CHF 3'512.95</span></span>
+                <span><span class="cost-label">Noch offen</span><span class="cost-val">CHF 94.07 ⚠️</span></span>
+            </div>
+        </div>
+        <div class="plan-body">
+            <div class="day-group">
+                <div class="day-header type-fly" onclick="toggleDay(this)"><div><div class="day-title">✈️ So 19. April · Anreisetag</div><div class="day-subtitle">Zürich → Lissabon · TAP TP933</div></div><div class="day-chevron">▼</div></div>
+                <div class="day-body"><div class="timeline">
+                    <div class="tl-item"><div class="tl-dot purple"></div><div class="tl-time">15:05 Uhr (spätestens)</div><div class="tl-title">🛫 Am Flughafen Zürich</div><div class="tl-desc">Check-in · 3h vor Abflug empfohlen</div></div>
+                    <div class="tl-item"><div class="tl-dot purple"></div><div class="tl-time">18:05 Uhr</div><div class="tl-title">Abflug ZRH</div><div class="tl-desc">TAP Air Portugal TP933 · Code: <strong>AQ2MJA</strong><br>Pascal 047-7399062936 · Theres 62934 · Enno 62935</div></div>
+                    <div class="tl-item"><div class="tl-dot blue"></div><div class="tl-time">20:05 Uhr</div><div class="tl-title">Ankunft Lissabon T1</div><div class="tl-desc">Flugdauer ~2h 00min</div></div>
+                    <div class="tl-item"><div class="tl-dot blue"></div><div class="tl-time">~20:30 Uhr</div><div class="tl-title">Transfer → Hotel Mundial</div><div class="tl-desc">🚕 Taxi €12–16 (15–20 min, empfohlen)<br>🚗 Uber/Bolt €7–14 (Parkhaus P2)<br>🚇 Metro: Rot → Alameda → Grün, Martim Moniz</div></div>
+                    <div class="tl-item"><div class="tl-dot blue"></div><div class="tl-time">~21:00 Uhr</div><div class="tl-title">🏨 Check-in Hotel Mundial</div><div class="tl-desc">Praça Martim Moniz 2 · Booking 5444902198 · PIN 4438</div></div>
+                </div>
+                <div class="route-box"><div class="route-title">✈️ ZRH → LIS</div><div class="route-stats"><div class="route-stat">📏 <strong>~2'100 km</strong></div><div class="route-stat">⏱ <strong>2h 00min</strong></div><div class="route-stat">💰 <strong>CHF 526.95</strong></div></div></div></div>
+            </div>
+            <div class="day-group">
+                <div class="day-header type-hotel" onclick="toggleDay(this)"><div><div class="day-title">🏛️ Mo–Di 20.–21. April · Lissabon</div><div class="day-subtitle">2 Tage Stadtbesichtigung · Frühstück inkl.</div></div><div class="day-chevron">▼</div></div>
+                <div class="day-body"><div class="timeline">
+                    <div class="tl-item"><div class="tl-dot purple"></div><div class="tl-time">Tagsüber</div><div class="tl-title">Stadtbesichtigung Lissabon</div><div class="tl-desc">Alfama · Belém €12 + Pastéis de Belém<br>Castelo de São Jorge €10 · Tram 28 €3<br>LX Factory kostenlos · Time Out Market €10–20<br>🏟️ Benfica Stadion Kombi €22<br>Miradouros: Graça, Senhora do Monte</div></div>
+                </div>
+                <div class="info-box"><span class="badge badge-g">✓ Frühstück inkl.</span> <span class="badge badge-g">✓ Bezahlt CHF 715.34</span></div></div>
+            </div>
+            <div class="day-group">
+                <div class="day-header type-drive" onclick="toggleDay(this)"><div><div class="day-title">🚗 Mi 22. April · Lissabon → Porto Covo</div><div class="day-subtitle">Check-out · Mietwagen · ~160 km · ~2h</div></div><div class="day-chevron">▼</div></div>
+                <div class="day-body"><div class="timeline">
+                    <div class="tl-item"><div class="tl-dot blue"></div><div class="tl-time">Bis 12:00 Uhr</div><div class="tl-title">🏨 Check-out Hotel Mundial</div></div>
+                    <div class="tl-item"><div class="tl-dot green"></div><div class="tl-time">11:30 Uhr</div><div class="tl-title">🚗 Mietwagen-Übernahme · Centauro</div><div class="tl-desc">R. João Cunha Serra, lote Q 5 · Tel: +351 211 303 540<br>Peugeot 2008 Electric · PT921441170<br><strong style="color:#ef4444">⚠ CHF 94.07 Restzahlung bei Übergabe!</strong></div></div>
+                    <div class="tl-item"><div class="tl-dot green"></div><div class="tl-time">~12:00 Uhr</div><div class="tl-title">Abfahrt Richtung Porto Covo</div><div class="tl-desc">Stopp Setúbal (50 km): 🐬 Delfin-Bootstour!<br>Stopp Comporta (80 km): Stranddorf</div></div>
+                    <div class="tl-item"><div class="tl-dot green"></div><div class="tl-time">16:00–22:00 Uhr</div><div class="tl-title">🏡 Check-in Monte da Bemposta</div><div class="tl-desc">Bemposta – Porto Covo · Booking 5594806149 · PIN 7029</div></div>
+                </div>
+                <div class="route-box"><div class="route-title">🚗 Lissabon → Porto Covo (A2 / IC4)</div><div class="route-stats"><div class="route-stat">📏 <strong>~160 km</strong></div><div class="route-stat">⏱ <strong>~2h 00min</strong></div></div></div></div>
+            </div>
+            <div class="day-group">
+                <div class="day-header type-stay" onclick="toggleDay(this)"><div><div class="day-title">🌊 Do 23. April · Porto Covo</div><div class="day-subtitle">Region erkunden · Frühstück inkl.</div></div><div class="day-chevron">▼</div></div>
+                <div class="day-body"><div class="timeline">
+                    <div class="tl-item"><div class="tl-dot purple"></div><div class="tl-time">Tagsüber</div><div class="tl-title">Porto Covo &amp; Umgebung</div><div class="tl-desc">Praia Grande &amp; Samoqueira (0–3 km)<br>Ilha do Pessegueiro (5 km) · Vila Nova de Milfontes (25 km)<br>Rota Vicentina Küstenwanderweg</div></div>
+                </div>
+                <div class="info-box"><span class="badge badge-g">✓ Frühstück inkl.</span> <span class="badge badge-g">✓ Bezahlt CHF 442.88</span></div></div>
+            </div>
+            <div class="day-group">
+                <div class="day-header type-drive" onclick="toggleDay(this)"><div><div class="day-title">🚗 Fr 24. April · Porto Covo → Sagres</div><div class="day-subtitle">Check-out · ~155 km · mit Stopps 4–5h</div></div><div class="day-chevron">▼</div></div>
+                <div class="day-body"><div class="timeline">
+                    <div class="tl-item"><div class="tl-dot green"></div><div class="tl-time">09:00–12:00 Uhr</div><div class="tl-title">🏡 Check-out Monte da Bemposta</div></div>
+                    <div class="tl-item"><div class="tl-dot orange"></div><div class="tl-time">~10:00 Uhr</div><div class="tl-title">Küstenroute N120 nach Sagres</div><div class="tl-desc">Zambujeira do Mar (40 km) · Odeceixe (70 km)<br>Aljezur + Praia de Arrifana (100 km)<br>Carrapateira / Praia da Bordeira (130 km)</div></div>
+                    <div class="tl-item"><div class="tl-dot orange"></div><div class="tl-time">Vor 15:00 Uhr</div><div class="tl-title">⚠️ Einkauf in Sagres</div><div class="tl-desc">Minipreço / Intermarché · Frühstück für 6 Tage!</div></div>
+                    <div class="tl-item"><div class="tl-dot orange"></div><div class="tl-time">Ab 15:00 Uhr</div><div class="tl-title">🏖️ Check-in Airbnb Sagres</div><div class="tl-desc">Gastgeber: Max Stephan · Code: HMQDMY2XW5</div></div>
+                </div>
+                <div class="route-box"><div class="route-title">🚗 Porto Covo → Sagres (N120 Küstenroute)</div><div class="route-stats"><div class="route-stat">📏 <strong>~155 km</strong></div><div class="route-stat">⏱ <strong>~1h 45min</strong> direkt</div></div></div></div>
+            </div>
+            <div class="day-group">
+                <div class="day-header type-stay" onclick="toggleDay(this)"><div><div class="day-title">🌞 Sa 25. – Mi 29. April · Sagres</div><div class="day-subtitle">5 Tage · Strände &amp; Tagesausflüge</div></div><div class="day-chevron">▼</div></div>
+                <div class="day-body"><div class="timeline">
+                    <div class="tl-item"><div class="tl-dot purple"></div><div class="tl-time">Strände</div><div class="tl-title">Mareta · Tonel · Martinhal · Beliche</div><div class="tl-desc">Cabo de São Vicente (6 km) · Fortaleza de Sagres (1 km)</div></div>
+                    <div class="tl-item"><div class="tl-dot purple"></div><div class="tl-time">Tagesausflüge</div><div class="tl-title">Algarve erkunden</div><div class="tl-desc">Lagos (30 km, 30 min) ⭐⭐⭐⭐⭐<br>Silves (70 km, 1h) · Portimão (60 km, 50 min)<br>Praia da Marinha (85 km) Top 10 weltweit!<br>Benagil-Höhle (90 km) · Albufeira (100 km)</div></div>
+                </div>
+                <div class="info-box"><span class="badge badge-r">✗ Frühstück selbst</span> <span class="badge badge-g">✓ Bezahlt CHF 923.25</span></div></div>
+            </div>
+            <div class="day-group">
+                <div class="day-header type-return" onclick="toggleDay(this)"><div><div class="day-title">⚠️ Do 30. April · Abreisetag</div><div class="day-subtitle">Sagres → Faro · SWISS LX8269 · Enger Zeitplan!</div></div><div class="day-chevron">▼</div></div>
+                <div class="day-body"><div class="timeline">
+                    <div class="tl-item"><div class="tl-dot red"></div><div class="tl-time">10:00 Uhr</div><div class="tl-title">🏖️ Check-out Airbnb Sagres</div><div class="tl-desc">Pünktlich · Schlüssel an Max Stephan</div></div>
+                    <div class="tl-item"><div class="tl-dot red"></div><div class="tl-time">~10:15 Uhr</div><div class="tl-title">Abfahrt Sagres → Faro Airport</div></div>
+                    <div class="tl-item"><div class="tl-dot red"></div><div class="tl-time">14:00–15:00 Uhr (Empfehlung)</div><div class="tl-title">🚗 Mietwagen zurückgeben</div><div class="tl-desc">Centauro Faro · R. Francisco Assis 6 · Tel: +351 289 146 800<br>⚡ Gleicher Ladestand wie bei Übernahme!</div></div>
+                    <div class="tl-item"><div class="tl-dot red"></div><div class="tl-time">Spätestens 15:30 Uhr</div><div class="tl-title">⚠️ Check-in Faro Airport</div></div>
+                    <div class="tl-item"><div class="tl-dot red"></div><div class="tl-time">18:30 Uhr</div><div class="tl-title">✈️ Abflug Faro</div><div class="tl-desc">SWISS LX8269 / Edelweiss WK269 · Code: <strong>YYW73Q</strong></div></div>
+                    <div class="tl-item"><div class="tl-dot purple"></div><div class="tl-time">22:20 Uhr</div><div class="tl-title">🏠 Ankunft Zürich</div></div>
+                </div>
+                <div class="route-box red"><div class="route-title">🚗 Sagres → Faro (EN125 / A22)</div><div class="route-stats"><div class="route-stat">📏 <strong>~110 km</strong></div><div class="route-stat">⏱ <strong>~1h 20min</strong></div></div></div>
+                <div class="warn-box">⚠️ NUR 2h Puffer zwischen Mietwagen-Rückgabe (16:30) und Abflug (18:30)! Wagen besser um 14–15 Uhr zurückgeben.</div></div>
+            </div>
+            <div class="day-group">
+                <div class="day-header type-misc" onclick="toggleDay(this)"><div><div class="day-title">💰 Kosten &amp; 📞 Kontakte</div><div class="day-subtitle">Gesamt CHF 3'607.02</div></div><div class="day-chevron">▼</div></div>
+                <div class="day-body"><div class="timeline">
+                    <div class="tl-item"><div class="tl-dot purple"></div><div class="tl-time">Flüge CHF 1'266.75</div><div class="tl-title">ZRH→LIS CHF 526.95 ✓ · FAO→ZRH CHF 739.80 ✓</div></div>
+                    <div class="tl-item"><div class="tl-dot blue"></div><div class="tl-time">Unterkünfte CHF 2'081.47</div><div class="tl-title">Mundial CHF 715.34 · Bemposta CHF 442.88 · Sagres CHF 923.25</div></div>
+                    <div class="tl-item"><div class="tl-dot green"></div><div class="tl-time">Transport CHF 258.80</div><div class="tl-title">Centauro CHF 164.73 ✓ + <span style="color:#ef4444">CHF 94.07 offen!</span></div></div>
+                </div>
+                <div style="font-size:.78rem;line-height:2.2;margin-top:.8rem;">
+                    🏨 Hotel Mundial: <a href="tel:+351218842000">+351 21 884 2000</a><br>
+                    🚗 Centauro LIS: <a href="tel:+351211303540">+351 211 303 540</a><br>
+                    🚗 Centauro FAO: <a href="tel:+351289146800">+351 289 146 800</a><br>
+                    🏡 Monte da Bemposta: <a href="tel:+351964513088">+351 964 513 088</a><br>
+                    🆘 Notruf PT: <a href="tel:112">112</a> · 🇨🇭 Botschaft: <a href="tel:+351213944090">+351 21 394 40 90</a>
+                </div></div>
+            </div>
+        </div>
+    </div>
+    <div id="map" class="leaflet-container leaflet-touch leaflet-fade-anim leaflet-grab leaflet-touch-drag leaflet-touch-zoom" tabindex="0" style="position: relative;"><div class="leaflet-pane leaflet-map-pane" style="transform: translate3d(0px, 0px, 0px);"><div class="leaflet-pane leaflet-tile-pane"><div class="leaflet-layer " style="z-index: 1; opacity: 1;"><div class="leaflet-tile-container leaflet-zoom-animated" style="z-index: 19; transform: translate3d(-980px, -474px, 0px) scale(1);"><img alt="" src="./Portugal Reise 2026_files/98.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1660px, 692px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/98(1).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1916px, 692px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/99.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1660px, 948px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/99(1).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1916px, 948px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/97.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1660px, 436px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/97(1).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1916px, 436px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/98(2).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1404px, 692px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/98(3).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(2172px, 692px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/99(2).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1404px, 948px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/99(3).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(2172px, 948px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/100.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1660px, 1204px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/100(1).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1916px, 1204px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/97(2).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1404px, 436px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/97(3).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(2172px, 436px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/100(2).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1404px, 1204px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/100(3).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(2172px, 1204px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/98(4).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1148px, 692px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/98(5).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(2428px, 692px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/99(4).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1148px, 948px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/99(5).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(2428px, 948px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/97(4).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1148px, 436px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/97(5).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(2428px, 436px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/100(4).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(1148px, 1204px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/100(5).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(2428px, 1204px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/98(6).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(892px, 692px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/98(7).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(2684px, 692px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/99(6).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(892px, 948px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/99(7).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(2684px, 948px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/97(6).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(892px, 436px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/97(7).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(2684px, 436px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/100(6).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(892px, 1204px, 0px); opacity: 1;"><img alt="" src="./Portugal Reise 2026_files/100(7).png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(2684px, 1204px, 0px); opacity: 1;"></div></div></div><div class="leaflet-pane leaflet-overlay-pane"></div><div class="leaflet-pane leaflet-shadow-pane"></div><div class="leaflet-pane leaflet-marker-pane"><div class="leaflet-marker-icon leaflet-div-icon leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -20px; margin-top: -20px; width: 40px; height: 40px; transform: translate3d(4028px, -1944px, 0px); z-index: -1944;"><div style="background:#6366f1;color:white;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;border:3px solid white;box-shadow:0 2px 10px rgba(0,0,0,.3)">✈️</div></div><div class="leaflet-marker-icon leaflet-div-icon leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -20px; margin-top: -20px; width: 40px; height: 40px; transform: translate3d(808px, 241px, 0px); z-index: 241;"><div style="background:#3b82f6;color:white;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;border:3px solid white;box-shadow:0 2px 10px rgba(0,0,0,.3)">🏨</div></div><div class="leaflet-marker-icon leaflet-div-icon leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -20px; margin-top: -20px; width: 40px; height: 40px; transform: translate3d(809px, 229px, 0px); z-index: 229;"><div style="background:#10b981;color:white;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;border:3px solid white;box-shadow:0 2px 10px rgba(0,0,0,.3)">🚗</div></div><div class="leaflet-marker-icon leaflet-div-icon leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -20px; margin-top: -20px; width: 40px; height: 40px; transform: translate3d(871px, 444px, 0px); z-index: 444;"><div style="background:#10b981;color:white;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;border:3px solid white;box-shadow:0 2px 10px rgba(0,0,0,.3)">🏡</div></div><div class="leaflet-marker-icon leaflet-div-icon leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -20px; margin-top: -20px; width: 40px; height: 40px; transform: translate3d(845px, 637px, 0px); z-index: 637;"><div style="background:#f59e0b;color:white;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;border:3px solid white;box-shadow:0 2px 10px rgba(0,0,0,.3)">🏖️</div></div><div class="leaflet-marker-icon leaflet-div-icon leaflet-zoom-animated leaflet-interactive" tabindex="0" role="button" style="margin-left: -20px; margin-top: -20px; width: 40px; height: 40px; transform: translate3d(1022px, 635px, 0px); z-index: 635;"><div style="background:#ef4444;color:white;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;border:3px solid white;box-shadow:0 2px 10px rgba(0,0,0,.3)">🛫</div></div></div><div class="leaflet-pane leaflet-tooltip-pane"></div><div class="leaflet-pane leaflet-popup-pane"><div class="leaflet-popup  leaflet-zoom-animated" style="opacity: 1; transform: translate3d(808px, 241px, 0px); bottom: -7px; left: -154px;"><div class="leaflet-popup-content-wrapper"><div class="leaflet-popup-content" style="width: 261px;"><div class="popup-title">🏨 Hotel Mundial · Lissabon</div><div class="popup-details"><div class="popup-label">Check-in / Check-out</div><div class="popup-value">So 19.04. ab 15:00 → Mi 22.04. bis 12:00</div><div class="popup-section"><div class="popup-label">Tel · Booking / PIN</div><div class="popup-value"><a href="tel:+351218842000">+351 21 884 2000</a><br>5444902198 · PIN: 4438</div></div><div class="popup-section"><span class="popup-badge pbadge-g">✓ Frühstück inkl.</span><span class="popup-badge pbadge-g">✓ CHF 715.34</span></div></div></div></div><div class="leaflet-popup-tip-container"><div class="leaflet-popup-tip"></div></div><a class="leaflet-popup-close-button" role="button" aria-label="Close popup" href="file:///Users/pascalnufer/Downloads/portugal_reisekarte_4.html#close"><span aria-hidden="true">×</span></a></div></div><div class="leaflet-proxy leaflet-zoom-animated" style="transform: translate3d(31220.6px, 25288.9px, 0px) scale(128);"></div></div><div class="leaflet-control-container"><div class="leaflet-top leaflet-left"><div class="leaflet-control-zoom leaflet-bar leaflet-control"><a class="leaflet-control-zoom-in" href="file:///Users/pascalnufer/Downloads/portugal_reisekarte_4.html#" title="Zoom in" role="button" aria-label="Zoom in" aria-disabled="false"><span aria-hidden="true">+</span></a><a class="leaflet-control-zoom-out" href="file:///Users/pascalnufer/Downloads/portugal_reisekarte_4.html#" title="Zoom out" role="button" aria-label="Zoom out" aria-disabled="false"><span aria-hidden="true">−</span></a></div></div><div class="leaflet-top leaflet-right"></div><div class="leaflet-bottom leaflet-left"></div><div class="leaflet-bottom leaflet-right"><div class="leaflet-control-attribution leaflet-control"><a href="https://leafletjs.com/" title="A JavaScript library for interactive maps"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8" class="leaflet-attribution-flag"><path fill="#4C7BE1" d="M0 0h12v4H0z"></path><path fill="#FFD500" d="M0 4h12v3H0z"></path><path fill="#E0BC00" d="M0 7h12v1H0z"></path></svg> Leaflet</a> <span aria-hidden="true">|</span> © OpenStreetMap</div></div></div></div>
+</div>
+
+<script>
+const map = L.map('map').setView([38.2,-8.8],7);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}).addTo(map);
+
+// ─── Wikipedia API Photo Loader ───────────────────────────────────────────
+const photoCache = {};
+
+async function loadWikiPhoto(wikiSlug, imgEl, placeholderEl) {
+    if (!wikiSlug) { placeholderEl.style.display='flex'; return; }
+    if (photoCache[wikiSlug]) {
+        if (photoCache[wikiSlug] === 'none') { placeholderEl.style.display='flex'; return; }
+        imgEl.src = photoCache[wikiSlug]; imgEl.style.display='block'; placeholderEl.style.display='none'; return;
+    }
+    try {
+        const r = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${wikiSlug}`);
+        const d = await r.json();
+        if (d.thumbnail && d.thumbnail.source) {
+            const src = d.thumbnail.source.replace(/\/\d+px-/, '/400px-');
+            photoCache[wikiSlug] = src;
+            imgEl.src = src;
+            imgEl.style.display = 'block';
+            placeholderEl.style.display = 'none';
+        } else {
+            photoCache[wikiSlug] = 'none';
+            placeholderEl.style.display = 'flex';
+        }
+    } catch(e) {
+        placeholderEl.style.display = 'flex';
+    }
+}
+
+function makePhotoPopup(emoji, title, info, wikiSlug) {
+    const id = 'ph_' + Math.random().toString(36).substr(2,8);
+    setTimeout(() => {
+        const wrap = document.getElementById(id);
+        if (!wrap) return;
+        const img = wrap.querySelector('img');
+        const ph  = wrap.querySelector('.popup-photo-none');
+        loadWikiPhoto(wikiSlug, img, ph);
+    }, 50);
+    return `<div id="${id}" class="popup-photo-wrap">
+        <img style="display:none" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="popup-photo-none" style="display:none">${emoji}</div>
+        <div class="popup-photo-loading">${emoji}</div>
+    </div>
+    <div class="popup-title">${title}</div>
+    <div class="popup-details">${info}</div>`;
+}
+
+// ─── Icon factories ───────────────────────────────────────────────────────
+const bigIcon = (e,c) => L.divIcon({html:`<div style="background:${c};color:white;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;border:3px solid white;box-shadow:0 2px 10px rgba(0,0,0,.3)">${e}</div>`,iconSize:[40,40]});
+const smIcon  = (e,c) => L.divIcon({html:`<div style="background:${c};color:white;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,.3)">${e}</div>`,iconSize:[30,30]});
+const chgIcon = L.divIcon({html:'<div style="background:#fbbf24;color:white;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.3)">⚡</div>',iconSize:[30,30]});
+
+// ─── MAIN BOOKING MARKERS (no photos) ────────────────────────────────────
+[
+    {c:[47.4647,8.5492],i:'✈️',col:'#6366f1',p:`<div class="popup-title">✈️ Abflug Zürich → Lissabon</div><div class="popup-details"><div class="popup-label">Flug</div><div class="popup-value"><strong>TAP Air Portugal TP933</strong></div><div class="popup-section"><div class="popup-label">Abflug / Ankunft</div><div class="popup-value">So 19.04. <strong>18:05</strong> ZRH → <strong>20:05</strong> LIS T1</div></div><div class="popup-section"><div class="popup-label">Code / E-Tickets</div><div class="popup-value"><strong>AQ2MJA</strong> · Pascal 047-7399062936</div></div><div class="popup-section"><span class="popup-badge pbadge-g">✓ CHF 526.95</span></div></div>`},
+    {c:[38.7223,-9.1393],i:'🏨',col:'#3b82f6',p:`<div class="popup-title">🏨 Hotel Mundial · Lissabon</div><div class="popup-details"><div class="popup-label">Check-in / Check-out</div><div class="popup-value">So 19.04. ab 15:00 → Mi 22.04. bis 12:00</div><div class="popup-section"><div class="popup-label">Tel · Booking / PIN</div><div class="popup-value"><a href="tel:+351218842000">+351 21 884 2000</a><br>5444902198 · PIN: 4438</div></div><div class="popup-section"><span class="popup-badge pbadge-g">✓ Frühstück inkl.</span><span class="popup-badge pbadge-g">✓ CHF 715.34</span></div></div>`,open:true},
+    {c:[38.7756,-9.1354],i:'🚗',col:'#10b981',p:`<div class="popup-title">🚗 Mietwagen · Centauro</div><div class="popup-details"><div class="popup-label">Mi 22.04. 11:30 Uhr</div><div class="popup-value">R. João Cunha Serra lote Q 5, Lisboa<br><a href="tel:+351211303540">+351 211 303 540</a></div><div class="popup-section"><span class="popup-badge pbadge-r">⚠ CHF 94.07 bei Übergabe!</span><span class="popup-badge pbadge-o">Kaution EUR 1'600</span></div></div>`},
+    {c:[37.8506,-8.7926],i:'🏡',col:'#10b981',p:`<div class="popup-title">🏡 Monte da Bemposta · Porto Covo</div><div class="popup-details"><div class="popup-label">Check-in / Check-out</div><div class="popup-value">Mi 22.04. 16:00–22:00 → Fr 24.04. 09:00–12:00</div><div class="popup-section"><div class="popup-label">Tel · Booking / PIN</div><div class="popup-value"><a href="tel:+351964513088">+351 964 513 088</a><br>5594806149 · PIN: 7029</div></div><div class="popup-section"><span class="popup-badge pbadge-g">✓ Frühstück inkl.</span><span class="popup-badge pbadge-g">✓ CHF 442.88</span></div></div>`},
+    {c:[37.0079,-8.9365],i:'🏖️',col:'#f59e0b',p:`<div class="popup-title">🏖️ Airbnb · Sagres</div><div class="popup-details"><div class="popup-label">Check-in / Check-out</div><div class="popup-value">Fr 24.04. ab 15:00 → Do 30.04. <strong>10:00</strong></div><div class="popup-section"><div class="popup-label">Code · Quittung</div><div class="popup-value">HMQDMY2XW5 · RCBXNJJZS2</div></div><div class="popup-section"><span class="popup-badge pbadge-r">✗ Frühstück selbst</span><span class="popup-badge pbadge-g">✓ CHF 923.25</span></div></div>`},
+    {c:[37.0144,-7.9659],i:'🛫',col:'#ef4444',p:`<div class="popup-title">🛫 Rückflug Faro → Zürich</div><div class="popup-details"><div class="popup-label">Flug</div><div class="popup-value"><strong>SWISS LX8269</strong> / Edelweiss WK269</div><div class="popup-section"><div class="popup-label">Abflug / Ankunft</div><div class="popup-value">Do 30.04. <strong>18:30</strong> FAO → <strong>22:20</strong> ZRH</div></div><div class="popup-section"><div class="popup-label">Code</div><div class="popup-value"><strong>YYW73Q</strong> · Pascal 724-6349895573</div></div><div class="popup-section"><span class="popup-badge pbadge-g">✓ CHF 739.80</span><span class="popup-badge pbadge-r">⚠ Zeitplan eng!</span></div></div>`},
+].forEach(loc => {
+    const m = L.marker(loc.c,{icon:bigIcon(loc.i,loc.col)}).addTo(map);
+    m.bindPopup(loc.p,{maxWidth:310});
+    if(loc.open) m.openPopup();
+});
+
+// ─── SIGHTS – Wikipedia slugs for photos ─────────────────────────────────
+const sightsData = [
+    {n:'Castelo de São Jorge',  c:[38.7139,-9.1334],  e:'🏰', wiki:'Castelo_de_S%C3%A3o_Jorge',           i:'Burg mit Panoramablick · €10 · Sonnenuntergang!'},
+    {n:'Mosteiro dos Jerónimos',c:[38.6976,-9.2064],  e:'⛪', wiki:'Jer%C3%B3nimos_Monastery',             i:'UNESCO-Weltkulturerbe · €12<br>🍮 Pastéis de Belém daneben'},
+    {n:'Torre de Belém',        c:[38.6916,-9.2159],  e:'🗼', wiki:'Tower_of_Bel%C3%A9m',                 i:'Berühmtester Turm Portugals<br>UNESCO · €6'},
+    {n:'Benfica Stadion',       c:[38.7527,-9.1848],  e:'🏟️', wiki:'Est%C3%A1dio_da_Luz',                 i:'Tour €15 · Museum €12 · Kombi €22<br>Mo–Fr 10–18 Uhr'},
+    {n:'LX Factory',            c:[38.7054,-9.1767],  e:'🎨', wiki:'LX_Factory',                          i:'Kreatives Viertel · kostenlos<br>Street Art, Cafés, Bars'},
+    {n:'Alfama',                c:[38.7115,-9.1295],  e:'🎵', wiki:'Alfama',                              i:'Ältestes Viertel · Fado-Klänge<br>Früh morgens · kostenlos'},
+    {n:'Miradouro da Graça',    c:[38.7167,-9.1293],  e:'🌅', wiki:'Miradouro_da_Gra%C3%A7a',             i:'Bester Aussichtspunkt Lissabons<br>Sonnenuntergang · kostenlos'},
+    {n:'Time Out Market',       c:[38.7070,-9.1453],  e:'🍽️', wiki:'Time_Out_Market_Lisboa',              i:'Top Food Market · €10–20'},
+    {n:'Cabo de São Vicente',   c:[37.0231,-8.9958],  e:'🌍', wiki:'Cape_Saint_Vincent%2C_Portugal',      i:'Südwestlichste Spitze Europas!<br>Leuchtturm · Sonnenuntergang legendär'},
+    {n:'Fortaleza de Sagres',   c:[37.0061,-8.9475],  e:'⚓', wiki:'Sagres_Point',                        i:'Festung Heinrichs d. Seefahrers · €4<br>1 km von Sagres'},
+    {n:'Ponta da Piedade',      c:[37.0808,-8.6698],  e:'⛵', wiki:'Ponta_da_Piedade',                    i:'⭐⭐⭐⭐⭐ Felsgrotten Lagos<br>Bootstour / Kajak! · 30 km'},
+    {n:'Ilha do Pessegueiro',   c:[37.8500,-8.8050],  e:'🏝️', wiki:'Ilha_do_Pessegueiro',                 i:'Insel mit Fort-Ruine<br>5 km von Porto Covo'},
+];
+
+const beachesData = [
+    {n:'Praia da Mareta',       c:[37.0053,-8.9322],  e:'🏖️', wiki:'Praia_da_Mareta',                    i:'⭐⭐⭐⭐⭐ Sagres Hauptstrand<br>Familien, geschützt'},
+    {n:'Praia do Tonel',        c:[37.0093,-8.9510],  e:'🏄', wiki:'Praia_do_Tonel',                     i:'⭐⭐⭐⭐ Surfer, Westküste<br>1 km von Sagres'},
+    {n:'Praia do Martinhal',    c:[37.0050,-8.9100],  e:'🧒', wiki:'Martinhal',                          i:'⭐⭐⭐⭐ Flach, windgeschützt<br>Ideal für Kinder · 2 km'},
+    {n:'Praia do Beliche',      c:[37.0174,-8.9777],  e:'📸', wiki:'Praia_do_Beliche',                   i:'⭐⭐⭐⭐ Klippen, klein, ruhig<br>4 km von Sagres'},
+    {n:'Praia da Marinha',      c:[37.0896,-8.4127],  e:'💎', wiki:'Praia_da_Marinha',                   i:'⭐⭐⭐⭐⭐ TOP 10 weltweit!<br>Türkisblaues Wasser · 85 km'},
+    {n:'Praia de Dona Ana',     c:[37.0865,-8.6689],  e:'✨', wiki:'Praia_de_Dona_Ana',                  i:'⭐⭐⭐⭐⭐ Goldene Klippen Lagos<br>30 km von Sagres'},
+    {n:'Praia do Camilo',       c:[37.0858,-8.6706],  e:'💙', wiki:'Praia_do_Camilo',                    i:'⭐⭐⭐⭐⭐ Romantisch, kristallklar<br>Lagos · 30 km'},
+    {n:'Praia do Amado',        c:[37.1636,-8.8990],  e:'🏄', wiki:'Praia_do_Amado',                    i:'⭐⭐⭐⭐ Surfer-Paradies<br>25 km nördlich'},
+    {n:'Praia de Arrifana',     c:[37.2917,-8.8591],  e:'🌊', wiki:'Praia_de_Arrifana',                  i:'⭐⭐⭐⭐⭐ Traumstrand Naturpark<br>Stopp auf Route'},
+    {n:'Praia da Bordeira',     c:[37.1861,-8.9034],  e:'🌾', wiki:'Praia_da_Bordeira',                  i:'⭐⭐⭐⭐ Wild, endlos, Dünen<br>35 km von Sagres'},
+    {n:'Praia de Benagil',      c:[37.0873,-8.4262],  e:'🦸', wiki:'Benagil_Cave',                       i:'⭐⭐⭐⭐⭐ Die Höhle! Must-See<br>Bootstour · 90 km'},
+    {n:'Praia Grande Porto Covo',c:[37.8515,-8.7960], e:'🌅', wiki:'Porto_Covo',                         i:'⭐⭐⭐⭐ Familienstrand Porto Covo<br>Restaurant am Strand'},
+    {n:'Praia da Samoqueira',   c:[37.8652,-8.8109],  e:'🤫', wiki:null,                                 i:'⭐⭐⭐⭐ Ruhig, wenig Touristen<br>3 km von Porto Covo'},
+];
+
+const daytripsData = [
+    {n:'Lagos',             c:[37.1028,-8.6742], e:'🏘️', wiki:'Lagos%2C_Portugal',          i:'⭐⭐⭐⭐⭐ 30 km · 30 min<br>Altstadt + Ponta da Piedade · Bootstour!'},
+    {n:'Silves',            c:[37.1878,-8.4383], e:'🏯', wiki:'Silves%2C_Portugal',          i:'70 km · 1h · Maurische rote Burg<br>Historische Stadt · Halbtag'},
+    {n:'Portimão',          c:[37.1392,-8.5376], e:'🛍️', wiki:'Portim%C3%A3o',               i:'60 km · 50 min · Shopping<br>Praia da Rocha · Halbtag'},
+    {n:'Albufeira',         c:[37.0894,-8.2478], e:'🌃', wiki:'Albufeira',                   i:'100 km · 1h 20min<br>Altstadt + Strände · Ganztag'},
+    {n:'Benagil-Höhle',     c:[37.0895,-8.4260], e:'🦸', wiki:'Benagil_Cave',                i:'90 km · 1h 15min<br>Berühmte Meereshöhle · Bootstour!'},
+    {n:'Praia da Marinha',  c:[37.0896,-8.4127], e:'💎', wiki:'Praia_da_Marinha',             i:'85 km · 1h 10min<br>Top 10 weltweit · Halbtag'},
+    {n:'Praia do Amado',    c:[37.1636,-8.8990], e:'🏄', wiki:'Praia_do_Amado',              i:'25 km Nord · Surfer-Paradies'},
+    {n:'Setúbal',           c:[38.5244,-8.8926], e:'🐬', wiki:'Set%C3%BAbal',                i:'Stopp LIS → Porto Covo · 50 km<br>🐬 Delfin-Bootstour Sado-Bucht!'},
+    {n:'Zambujeira do Mar', c:[37.5250,-8.7847], e:'🌊', wiki:'Zambujeira_do_Mar',            i:'Stopp auf Küstenroute<br>Klippen-Dorf · Cabo Sardão'},
+    {n:'Aljezur',           c:[37.3171,-8.8035], e:'🏰', wiki:'Aljezur',                     i:'Stopp auf Küstenroute<br>Burg + Praia de Arrifana!'},
+    {n:'Odeceixe',          c:[37.4403,-8.7975], e:'🌾', wiki:'Odeceixe',                    i:'Stopp auf Küstenroute<br>Fluss-Strand + Windmühle'},
+];
+
+const chargingData = [
+    {n:'Setúbal',           c:[38.5244,-8.8926], t:'Schnelllader'},
+    {n:'Santiago do Cacém', c:[38.0167,-8.6972], t:'Schnelllader'},
+    {n:'Sines',             c:[37.9554,-8.8705], t:'Normal & Schnell'},
+    {n:'Odemira',           c:[37.5978,-8.6389], t:'Schnelllader'},
+    {n:'Lagos',             c:[37.1028,-8.6742], t:'Viele Stationen'},
+    {n:'Portimão',          c:[37.1392,-8.5376], t:'Viele Stationen'},
+    {n:'Albufeira',         c:[37.0894,-8.2478], t:'Viele Stationen'},
+    {n:'Faro Stadt',        c:[37.0194,-7.9322], t:'Viele Stationen'},
+    {n:'Faro Flughafen',    c:[37.0144,-7.9659], t:'Schnelllader · auf dem Weg zur Rückgabe!'},
+];
+
+const layers = {sights:[],beaches:[],daytrips:[],charging:[]};
+const visible = {sights:false,beaches:false,daytrips:false,charging:false};
+
+sightsData.forEach(d => {
+    const m = L.marker(d.c,{icon:smIcon(d.e,'#8b5cf6')});
+    m.bindPopup(() => makePhotoPopup(d.e,'🏛️ '+d.n,d.i,d.wiki), {maxWidth:320});
+    layers.sights.push(m);
+});
+beachesData.forEach(d => {
+    const m = L.marker(d.c,{icon:smIcon(d.e,'#06b6d4')});
+    m.bindPopup(() => makePhotoPopup(d.e,'🏖️ '+d.n,d.i,d.wiki), {maxWidth:320});
+    layers.beaches.push(m);
+});
+daytripsData.forEach(d => {
+    const m = L.marker(d.c,{icon:smIcon(d.e,'#ec4899')});
+    m.bindPopup(() => makePhotoPopup(d.e,'🎯 '+d.n,d.i,d.wiki), {maxWidth:320});
+    layers.daytrips.push(m);
+});
+chargingData.forEach(d => {
+    const m = L.marker(d.c,{icon:chgIcon});
+    m.bindPopup(`<div class="popup-title">⚡ ${d.n}</div><div class="popup-details">Typ: ${d.t}<br>Anbieter: EVIO, Miio, EDP</div>`);
+    layers.charging.push(m);
+});
+
+let routingControl=null, routingOn=false;
+
+function togglePlan(btn){document.getElementById('planPanel').classList.toggle('open');btn.classList.toggle('btn-active');}
+function toggleRouting(btn){
+    if(routingOn){map.removeControl(routingControl);routingControl=null;routingOn=false;btn.classList.remove('btn-active');}
+    else{
+        routingControl=L.Routing.control({
+            waypoints:[L.latLng(38.7756,-9.1354),L.latLng(37.8506,-8.7926),L.latLng(37.0079,-8.9365),L.latLng(37.0144,-7.9659)],
+            lineOptions:{styles:[{color:'#10b981',weight:5,opacity:.7}]},
+            createMarker:()=>null,show:false,addWaypoints:false,draggableWaypoints:false,fitSelectedRoutes:true
+        }).addTo(map);
+        routingOn=true;btn.classList.add('btn-active');
+    }
+}
+function toggleLayer(btn,name){
+    if(visible[name]){layers[name].forEach(m=>map.removeLayer(m));visible[name]=false;btn.classList.remove('btn-active');}
+    else{layers[name].forEach(m=>m.addTo(map));visible[name]=true;btn.classList.add('btn-active');}
+}
+function resetView(){
+    if(routingControl){map.removeControl(routingControl);routingControl=null;routingOn=false;}
+    Object.keys(layers).forEach(k=>{layers[k].forEach(m=>map.removeLayer(m));visible[k]=false;});
+    document.getElementById('planPanel').classList.remove('open');
+    document.querySelectorAll('.control-buttons button').forEach(b=>b.classList.remove('btn-active'));
+    map.fitBounds([[36.9,-9.5],[39.0,-7.5]]);
+}
+function toggleDay(h){h.nextElementSibling.classList.toggle('open');h.querySelector('.day-chevron').classList.toggle('open');}
+
+map.fitBounds([[36.9,-9.5],[39.0,-7.5]]);
+</script>
+
+
+</body></html>
